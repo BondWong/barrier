@@ -28,7 +28,7 @@
     //    childpointers[0] = &nodes[2*i+1].parentsense, or &dummy if 2*i+1 >= P
     //    childpointers[1] = &nodes[2*i+2].parentsense, or &dummy if 2*i+2 >= P
     //    initially childnotready = havechild and parentsense = false
-	
+
     procedure tree_barrier
         with nodes[vpid] do
 	    repeat until childnotready = {false, false, false, false}
@@ -43,14 +43,85 @@
 	    sense := not sense
 */
 
-void gtmp_init(int num_threads){
+// type treenode = record
+// 		parentsense : Boolean
+// parentpointer : ^Boolean
+// childpointers : array [0..1] of ^Boolean
+// havechild : array [0..3] of Boolean
+// childnotready : array [0..3] of Boolean
 
+struct treenode {
+	int parentsense;
+	int sense; // processor private sense : Boolean
+	int* parentpointer;
+	int childpointers[2];
+	int havechild[4];
+	int childnotready[4];
+};
+
+// dummy : Boolean //pseudo-data
+static int dummy = -1;
+static struct treenode * records;
+
+void gtmp_init(int num_threads) {
+	records = malloc(sizeof(struct treenode) * num_threads);
+	int i, j;
+	for (i = 0; i < num_threads; i++) {
+		// initially parentsense = false sense is initially true
+		struct treenode node = {0, 1, &dummy, {0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
+		records[i] = node;
+		for (j = 0; j < 4; j++) {
+			// havechild[j] = true if 4 * i + j + 1 < P; otherwise false
+			if (4 * i + j + 1 < num_threads) records[i].havechild[i] = 1;
+			else records[i].havechild[i] = 0;
+			records[i].childnotready[i] = records[i].havechild[i]; // childnotready = havechild
+		}
+
+		// parentpointer = &nodes[floor((i-1)/4].childnotready[(i-1) mod 4] or dummy if i = 0
+		if(i == 0) records[i].parentpointer = &dummy;
+		else records[i].parentpointer = &(records[(i - 1) / 4].childnotready[(i - 1) % 4]);
+
+		// childpointers[0] = &nodes[2*i+1].parentsense, or &dummy if 2*i+1 >= P
+		// childpointers[1] = &nodes[2*i+2].parentsense, or &dummy if 2*i+2 >= P
+		for (j = 0; j < 2; j++) {
+			if (2 * i + j >= num_threads) records[i].childpointers[j] = &dummy;
+			else records[i].childpointers[j] = &(records[2 * i + j].parentsense);
+		}
+	}
 }
 
-void gtmp_barrier(){
+void gtmp_barrier() {
+	int i = omp_get_thread_num();
 
+	// 	repeat until childnotready = {false, false, false, false}
+	int* childnotready = records[i].childnotready;
+	while(childnotready[0]
+		|| childnotready[1]
+		|| childnotready[2]
+		|| childnotready[3]);
+
+	// 	childnotready := havechild //prepare for next barrier
+	int j;
+	for (j = 0; j < 4; j++) records[i].childnotready[j] = records[i].havechild[j];
+
+	// 	parentpointer^ := false //let parent know I'm ready
+	// 	// if not root, wait until my parent signals wakeup
+	// 	if vpid != 0
+	// 			repeat until parentsense = sense
+	// 	// signal children in wakeup tree
+	if (i != 0) {
+		*(records[i].parentpointer) = 0;
+		while(records[i].parentsense != records[i].sense);
+	}
+
+	// 	childpointers[0]^ := sense
+	*(records[i].childpointers[0]) = records[i].sense;
+	// 	childpointers[1]^ := sense
+	*(records[i].childpointers[1]) = records[i].sense;
+	// 	sense := not sense
+	records[i].sense = !(records[i].sense);
 }
 
-void gtmp_finalize(){
-
+void gtmp_finalize() {
+	free(records);
 }
