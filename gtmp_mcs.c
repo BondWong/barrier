@@ -54,7 +54,7 @@ struct treenode {
 	int parentsense;
 	int sense; // processor private sense : Boolean
 	int* parentpointer;
-	int childpointers[2];
+	int* childpointers[2];
 	int havechild[4];
 	int childnotready[4];
 };
@@ -72,9 +72,9 @@ void gtmp_init(int num_threads) {
 		records[i] = node;
 		for (j = 0; j < 4; j++) {
 			// havechild[j] = true if 4 * i + j + 1 < P; otherwise false
-			if (4 * i + j + 1 < num_threads) records[i].havechild[i] = 1;
-			else records[i].havechild[i] = 0;
-			records[i].childnotready[i] = records[i].havechild[i]; // childnotready = havechild
+			if (4 * i + j + 1 < num_threads) records[i].havechild[j] = 1;
+			else records[i].havechild[j] = 0;
+			records[i].childnotready[j] = records[i].havechild[j]; // childnotready = havechild
 		}
 
 		// parentpointer = &nodes[floor((i-1)/4].childnotready[(i-1) mod 4] or dummy if i = 0
@@ -108,12 +108,12 @@ void gtmp_barrier() {
 	// 	// if not root, wait until my parent signals wakeup
 	// 	if vpid != 0
 	// 			repeat until parentsense = sense
-	// 	// signal children in wakeup tree
 	if (i != 0) {
 		*(records[i].parentpointer) = 0;
 		while(records[i].parentsense != records[i].sense);
 	}
 
+  // 	// signal children in wakeup tree
 	// 	childpointers[0]^ := sense
 	*(records[i].childpointers[0]) = records[i].sense;
 	// 	childpointers[1]^ := sense
