@@ -110,22 +110,17 @@ void gtmp_barrier() {
 	// 	if vpid != 0
 	// 			repeat until parentsense = sense
 	if (i != 0) {
-		printf("thread[%d] notify parent I'm ready\n", i); fflush(stdout);
 		*(records[i].parentpointer) = 0;
-		printf("thread[%d] wait for signal\n", i); fflush(stdout);
-		printf("thread[%d] sense %d\n", records[i].sense); fflush(stdout);
-		printf("thread[%d] parentsense %d\n", records[i].parentsense); fflush(stdout);
 		while(records[i].parentsense != records[i].sense);
-	} else {
-		// 	// signal children in wakeup tree
-		// 	childpointers[0]^ := sense
-		*(records[i].childpointers[0]) = records[i].sense;
-		// 	childpointers[1]^ := sense
-		*(records[i].childpointers[1]) = records[i].sense;
-		// 	sense := not sense
-		printf("thread[%d] reverse sense\n", i); fflush(stdout);
-		records[i].sense = !(records[i].sense);
 	}
+
+	// 	// signal children in wakeup tree
+	// 	childpointers[0]^ := sense
+	*(records[i].childpointers[0]) = records[i].sense;
+	// 	childpointers[1]^ := sense
+	*(records[i].childpointers[1]) = records[i].sense;
+	// 	sense := not sense
+	records[i].sense = !(records[i].sense);
 }
 
 void gtmp_finalize() {
