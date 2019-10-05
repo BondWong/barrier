@@ -101,20 +101,20 @@ void gtmpi_init(int num_threads){
     int k;
     for (k = 0; k < logP + 1; k++) {
       //    winner if k > 0, i mod 2^k = 0, i + 2^(k-1) < P , and 2^k < P
-      if(k > 0 && i % pow2(k) == 0 && i + (1 << pow2(k - 1) < P && pow2(k) < P) rounds[i][k].role_type = WINNER;
+      if(k > 0 && i % pow2(k) == 0 && i + pow2(k - 1) < P && pow2(k) < P) rounds[i][k].role_type = WINNER;
       //    bye if k > 0, i mode 2^k = 0, and i + 2^(k-1) >= P
-      else if(k > 0 && i % pow2(k) == 0 && i + (1 << pow2(k - 1)) >= P) rounds[i][k].role_type = BYE;
+      else if(k > 0 && i % pow2(k) == 0 && i + pow2(k - 1) >= P) rounds[i][k].role_type = BYE;
       //    loser if k > 0 and i mode 2^k = 2^(k-1)
-      else if(k > 0 && (i % (1 << pow2(k))) == (1 << pow2(k -1))) rounds[i][k].role_type = LOSER;
+      else if(k > 0 && (i % pow2(k)) == pow2(k -1)) rounds[i][k].role_type = LOSER;
       //    champion if k > 0, i = 0, and 2^k >= P
-      else if(k > 0 && i == 0 && (1 << pow2(k)) >= P) rounds[i][k].role_type = CHAMPION;
+      else if(k > 0 && i == 0 && pow2(k) >= P) rounds[i][k].role_type = CHAMPION;
       //    dropout if k = 0
       else if(k == 0) rounds[i][k].role_type = DROPOUT;
       //    unused otherwise; value immaterial
       else rounds[i][k].role_type = UNUSED;
 
       // round[i-2^(k-1)][k].flag if rounds[i][k].role = loser
-      if (rounds[i][k].role_type == LOSER) rounds[i][k].opponent = i - (1 << pow2(k - 1));
+      if (rounds[i][k].role_type == LOSER) rounds[i][k].opponent = i - pow2(k - 1);
       // round[i+2^(k-1)][k].flag if rounds[i][k].role = winner or champion
       else if (rounds[i][k].role_type == WINNER || rounds[i][k].role_type == CHAMPION) rounds[i][k].opponent = i + (1 << pow2(k - 1));
       // unused otherwise; value immaterial
