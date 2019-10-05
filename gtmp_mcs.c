@@ -52,11 +52,12 @@
 
 struct treenode {
 	int parentsense;
-	int sense; // processor private sense : Boolean
 	int* parentpointer;
 	int* childpointers[2];
 	int havechild[4];
 	int childnotready[4];
+
+	int sense; // processor private sense : Boolean
 };
 
 // dummy : Boolean //pseudo-data
@@ -68,7 +69,7 @@ void gtmp_init(int num_threads) {
 	int i, j;
 	for (i = 0; i < num_threads; i++) {
 		// initially parentsense = false sense is initially true
-		struct treenode node = {0, 1, &dummy, {0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
+		struct treenode node = {0, &dummy, {0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, 1};
 		records[i] = node;
 		for (j = 0; j < 4; j++) {
 			// havechild[j] = true if 4 * i + j + 1 < P; otherwise false
@@ -118,6 +119,7 @@ void gtmp_barrier() {
 		// 	childpointers[1]^ := sense
 		*(records[i].childpointers[1]) = records[i].sense;
 		// 	sense := not sense
+		printf("thread[%d] reverse sense\n", i); fflush(stdout);
 		records[i].sense = !(records[i].sense);
 	}
 }
