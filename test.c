@@ -21,7 +21,8 @@ void fast_barriers(void (*barrier)(void),
     gettimeofday(&start, NULL);
 
     /* Fast barriers. */
-    for (unsigned int b = 0; b < num_barriers; ++b) {
+    unsigned int b;
+    for (b = 0; b < num_barriers; ++b) {
         gettimeofday(&arrive[b], NULL);
         barrier();
         gettimeofday(&leave[b], NULL);
@@ -47,7 +48,8 @@ void slow_barriers(void (*barrier)(void),
     srand(time(NULL));
 
     /* slow barriers. */
-    for (unsigned int b = 0; b < num_barriers; ++b) {
+    unsigned int b;
+    for (b = 0; b < num_barriers; ++b) {
         sleep(rand() % 5);
         gettimeofday(&arrive[b], NULL);
         barrier();
@@ -67,7 +69,8 @@ void print_json_results(size_t total_barriers,
     /* Print the results to the file. */
     fprintf(fd, "{\n  \"barriers\": [\n");
 
-    for (unsigned int b = 0; b < total_barriers; ++b) {
+    unsigned int b;
+    for (b = 0; b < total_barriers; ++b) {
         fprintf(fd, "    {\n");
 
         fprintf(fd, "      \"arr\": {\"sec\":%ld, \"usec\":%ld},\n",
