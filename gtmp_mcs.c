@@ -95,11 +95,10 @@ void gtmp_barrier() {
 	int i = omp_get_thread_num();
 
 	// 	repeat until childnotready = {false, false, false, false}
-	int* childnotready = records[i].childnotready;
-	while(childnotready[0]);
-	while(childnotready[1]);
-	while(childnotready[2]);
-	while(childnotready[3]);
+	while(records[i].childnotready[0]);
+	while(records[i].childnotready[1]);
+	while(records[i].childnotready[2]);
+	while(records[i].childnotready[3]);
 
 	// 	childnotready := havechild //prepare for next barrier
 	int j;
