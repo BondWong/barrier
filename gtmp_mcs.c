@@ -114,6 +114,7 @@ void gtmp_barrier() {
 		*(records[i].parentpointer) = 0;
 		printf("thread[%d] wait for signal\n", i); fflush(stdout);
 		printf("thread[%d] sense %d\n", records[i].sense); fflush(stdout);
+		printf("thread[%d] parentsense %d\n", records[i].parentsense); fflush(stdout);
 		while(records[i].parentsense != records[i].sense);
 	} else {
 		// 	// signal children in wakeup tree
