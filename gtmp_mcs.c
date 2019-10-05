@@ -96,12 +96,10 @@ void gtmp_barrier() {
 
 	// 	repeat until childnotready = {false, false, false, false}
 	int* childnotready = records[i].childnotready;
-	printf("thread[%d] wait for child ready\n", i); fflush(stdout);
 	while(childnotready[0]);
 	while(childnotready[1]);
 	while(childnotready[2]);
 	while(childnotready[3]);
-	printf("thread[%d] all child ready\n", i); fflush(stdout);
 
 	// 	childnotready := havechild //prepare for next barrier
 	int j;
@@ -115,6 +113,7 @@ void gtmp_barrier() {
 		printf("thread[%d] notify parent I'm ready\n", i); fflush(stdout);
 		*(records[i].parentpointer) = 0;
 		printf("thread[%d] wait for signal\n", i); fflush(stdout);
+		printf("thread[%d] sense %d\n", records[i].sense); fflush(stdout);
 		while(records[i].parentsense != records[i].sense);
 	} else {
 		// 	// signal children in wakeup tree
