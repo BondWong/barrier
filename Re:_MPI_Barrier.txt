@@ -10,8 +10,31 @@ that I could get your to share your thoughts on them.
 In summary, we compared the algorithms presented in the famous
 Mellor-Crummey Scott paper by measuring how long it took for a given
 number of threads to cross 10^5 barriers. All experiments were run on
-a dedicated cluster with one process assigned to each node. 
+a dedicated cluster with one process assigned to each node.
 
 Details individual nodes are attached along with the data from the experiments.
 
 Looking forward to your insight!
+
+
+Let's take a look at Counter, Dissemination and MCS first. For Counter algorithm, the longest wait time happens in the master node,
+to which every node send message. Once it receive all messages, it notifies everyone. Therefore the time
+complexity is O(N). However, machines can work in parallel, therefore the real time complexity is O(1).
+Dissemination has no layer, but each node needs to send log(k)N number of message sequentially, therefore its performance is worse than Counter.
+MCS has layers, the root node time complexity is also O(log(k)N). Therefore, Counter has better performance than Dissemination and MCS.
+
+The results also show that MCS is slightly worse than Dissemination. I am not sure about this one. Dissemination sends N(log(k)N) messages in total, which
+is more than MCS, while some Dissemination nodes only send a few to its peers. In each round, the message sent are the same. Sending more messages can help
+keep the cache warm. I guess Dissemination nodes have warmer cache than MCS.
+
+Tournament has worst performance. MPI Built-in algorithm has the same performance as Tournament, I believe that MPI Built-in algorithm is Tournament algorithm.
+Tournament time complexity is (log(k)N), hence worse than Counter. One thing that stands out in tournament is the use of memory. It uses 2D array to store
+the role of each node of each round. If the machine loads the 2D array configuration from file system, it posts a great overhead, which can be seconds. This
+explain why Tournament is few seconds slower.
+
+The last thing I want to point out is that even though Counter has the best performance, it does not necessarily the best algorithm for distributed machine. It is
+exposed to single point failure more than other algorithm. In Counter, everyone sends message to a single master, while the others balance the load more. If the machine
+has rate limit guarding, Counter can easily suffer.
+
+Best,
+Junbang

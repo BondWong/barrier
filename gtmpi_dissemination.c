@@ -45,6 +45,10 @@ int log2(int P) {
 	return res;
 }
 
+int pow2(int k) {
+	return 1 << k;
+}
+
 void gtmpi_init(int num_threads){
 	P = num_threads;
 	logP = log2(P);
@@ -57,12 +61,12 @@ void gtmpi_barrier(){
 
 	int k;
 	for (k = 0; k < logP; k++) {
-		int j = (i + (1 << k)) % P; // partner j
-		int l = (i - (1 << k) + P) % P; // l's partner is i
+		int j = (i + pow2(k)) % P; // partner j
+		int l = (i - pow2(k) + P) % P; // l's partner is i
 		/*
 			do not need parity. partity's nature is to form a loop as the following:
 			[0, 0] => [1, 0] => [1, 1] (flip sense) => [0, 1] => [0, 0] (flip sense again)
-			what really happens is i signals its partner j and waits for l whose partner is i
+			what really happens is i signals its partner j and waits for l, whose partner is i
 			therefore, i didn't implement parity here
 		 */
 		MPI_Send(NULL, 0, MPI_INT, j, 1, MPI_COMM_WORLD); // signals partner

@@ -16,3 +16,37 @@ attached along with the data from the experiments.
 Looking forward to your insight!
 
 
+The result is pretty interesting. Dissemination, Tournament and MCS share common
+virtues. 1. every one spins on statically assigned memory location. This exploits
+cache. 2. Their implementation doesn't need testAndSet style atomic functions.
+3. The fact that every one is spinning in given memory location, the contention rate
+is low. In terms of performance, I expect MCS = Tournament > Dissemination.
+Dissemination total communication complexity is NlogN, while MCS and Tournament are only logN.
+Hence, slightly slower. Yet, from the result, Dissemination and Tournament are roughtly the same.
+My explanation to this is that we only have <= 23 threads, and 24 cores. That means each processor in
+Dissemination algorithm can have a communication complexity of logN, which is the same as Tournament.
+Therefore, we can see that their performance are roughly the same.
+
+The result also shows that MCS is significantly slower than Tournament. I am not sure about this, but
+my guess is that the cache size of the machine running the benchmark is very limited. As MCS parent
+node needs more cache than a node in tournament, loss of cache locality can contribute to the low performance
+of MCS.
+
+I also notice that Tree algorithm is significantly slower as well. Compared to the above algorithm, the
+biggest drawback with Tree is that the spinning location is dynamically determine. From a processor's point of view,
+it means higher contention rate and worse use of cache. These contribute to the lower performance compared to the above
+three algorithms.
+
+The most interesting one is the counter algorithm, which is significantly better than all of the algorithms, even
+OMP Built-in algorithm, which, by the way, is probably Tournament, given that they have similar performance. Counter uses
+atomic function and two shared variables. The use of two shared variables mean higher contention rate than the above mentioned
+algorithms that has each processor spins on given location. The use of atomic function also has performance overhead compared to
+simple hardware operation. Yet, it yields the best performance. Again, not super sure. But I guess the benchmark is done on a NUMA
+machine with limited cache size. Counter algorithm use the least memory, therefore limited cache size affects it the least. With sufficient
+cache for the Counter algorithm, it accesses memory the least also, reducing the negative effect of NUMA machine.
+
+I reason the result based on the virtues of each algorithm. I believe that the machine type, memory size and cache size contribute to
+the result. It would be great if you can share the benchmarking hardware environment.
+
+Thanks,
+Junbang

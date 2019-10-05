@@ -95,10 +95,10 @@ void gtmp_barrier() {
 
 	// 	repeat until childnotready = {false, false, false, false}
 	int* childnotready = records[i].childnotready;
-	while(childnotready[0]
-		|| childnotready[1]
-		|| childnotready[2]
-		|| childnotready[3]);
+	while(childnotready[0]);
+	while(childnotready[1]);
+	while(childnotready[2]);
+	while(childnotready[3]);
 
 	// 	childnotready := havechild //prepare for next barrier
 	int j;
@@ -111,15 +111,15 @@ void gtmp_barrier() {
 	if (i != 0) {
 		*(records[i].parentpointer) = 0;
 		while(records[i].parentsense != records[i].sense);
+	} else {
+		// 	// signal children in wakeup tree
+		// 	childpointers[0]^ := sense
+		*(records[i].childpointers[0]) = records[i].sense;
+		// 	childpointers[1]^ := sense
+		*(records[i].childpointers[1]) = records[i].sense;
+		// 	sense := not sense
+		records[i].sense = !(records[i].sense);
 	}
-
-  // 	// signal children in wakeup tree
-	// 	childpointers[0]^ := sense
-	*(records[i].childpointers[0]) = records[i].sense;
-	// 	childpointers[1]^ := sense
-	*(records[i].childpointers[1]) = records[i].sense;
-	// 	sense := not sense
-	records[i].sense = !(records[i].sense);
 }
 
 void gtmp_finalize() {
